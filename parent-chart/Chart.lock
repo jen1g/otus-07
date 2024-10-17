@@ -1,0 +1,12 @@
+dependencies:
+- name: auth-service
+  repository: file://../auth-service/helm
+  version: 0.1.0
+- name: gateway-service
+  repository: file://../gateway-service/helm
+  version: 0.1.0
+- name: user-service
+  repository: file://../user-service/helm
+  version: 0.1.0
+digest: sha256:38c2a1f3d9ea4c49840bf2191f0f9867110b73c33afecdeb09f3f22764058e30
+generated: "2024-10-17T00:30:08.1012651+04:00"

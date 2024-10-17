@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  labels:
+    app: {{ .Release.Name }}
+data:
+  application.yaml: |
+    spring:
+      cloud:
+        gateway:
+          routes:
+            - id: auth-service
+              uri: http://{{ .Values.gateway.authServiceNameAuth }}.{{ .Release.Namespace }}.svc.cluster.local
+              predicates:
+                - Path=/auth/**
+              filters:
+                - StripPrefix=1
+
+            - id: user-service-open
+              uri: http://{{ .Values.gateway.authServiceNameUser }}.{{ .Release.Namespace }}.svc.cluster.local
+              predicates:
+                - Path=/user
+
+            - id: user-service-secure
+              uri: http://{{ .Values.gateway.authServiceNameUser }}.{{ .Release.Namespace }}.svc.cluster.local
+              predicates:
+                - Path=/user/**
+              filters:
+                - CheckAuthToken
