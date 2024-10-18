@@ -1,0 +1,22 @@
+replicaCount: 1
+
+image:
+  repository: your-docker-repo/billing-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8082
+
+postgresql:
+  enabled: true
+  postgresqlUsername: billing_user
+  postgresqlPassword: billing_pass
+  postgresqlDatabase: billing_db
+  servicePort: 5432
+
+kafka:
+  bootstrapServers: kafka:9092
+
+resources: {}

@@ -1,0 +1,12 @@
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 9092
+
+auth:
+  clientProtocol: plaintext
+
+zookeeper:
+  enabled: true
+  auth.enabled: false

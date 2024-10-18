@@ -21,3 +21,8 @@ spring:
             - Path=/user/**
           filters:
             - CheckAuthToken  # Удалили RemoveRequestHeader
+
+        - id: billing-service
+          uri: http://billing-service.otus-06.svc.cluster.local:8082
+          predicates:
+            - Path=/account/**

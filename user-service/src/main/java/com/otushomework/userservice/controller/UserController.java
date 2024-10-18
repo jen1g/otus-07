@@ -1,10 +1,12 @@
 package com.otushomework.userservice.controller;
 
 import com.otushomework.userservice.entity.User;
+import com.otushomework.userservice.event.UserCreatedEvent;
 import com.otushomework.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -16,15 +18,25 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
+    private final KafkaTemplate<String, UserCreatedEvent> kafkaTemplate;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, KafkaTemplate<String, UserCreatedEvent> kafkaTemplate) {
         this.userService = userService;
+        this.kafkaTemplate = kafkaTemplate;
+
     }
 
     @PostMapping
     private ResponseEntity<Map<String, Integer>> createUser(@RequestBody User user) {
         User savedUser = userService.saveUser(user);
+
+        UserCreatedEvent event = new UserCreatedEvent();
+        event.setUserId(savedUser.getId());
+        event.setUsername(savedUser.getUsername());
+        event.setEmail(savedUser.getEmail());
+
+        kafkaTemplate.send("user-created-topic", event);
         Map<String, Integer> response = new HashMap<>();
         response.put("id", savedUser.getId());
         return ResponseEntity.ok().body(response);

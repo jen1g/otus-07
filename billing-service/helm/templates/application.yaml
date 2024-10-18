@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-service
+  labels:
+    app: billing-service
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: billing-service
+  template:
+    metadata:
+      labels:
+        app: billing-service
+    spec:
+      containers:
+        - name: billing-service
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://billing-service-postgresql:{{ .Values.postgresql.servicePort }}/{{ .Values.postgresql.postgresqlDatabase }}"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: {{ .Values.postgresql.postgresqlUsername }}
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: {{ .Values.postgresql.postgresqlPassword }}
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: {{ .Values.kafka.bootstrapServers }}
+          resources: {{ toYaml .Values.resources | indent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-service
+  labels:
+    app: {{ .Release.Name }}-service
+spec:
+  selector:
+    app: {{ .Release.Name }}
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: {{ .Values.container.port }}
+  type: ClusterIP

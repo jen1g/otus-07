@@ -1,4 +1,4 @@
-package com.otushomework.billing;
+package com.otushomework.billingservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
