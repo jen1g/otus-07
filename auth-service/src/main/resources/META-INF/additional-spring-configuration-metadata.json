@@ -4,5 +4,10 @@
       "name": "user.service.url",
       "type": "java.lang.String",
       "description": "Description for user.service.url."
-  }
-] }
+    },
+    {
+      "name": "billing.service.url",
+      "type": "java.lang.String",
+      "description": "Description for billing.service.url."
+    }
+  ] }

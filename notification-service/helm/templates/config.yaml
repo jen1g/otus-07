@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  labels:
+    app: {{ .Release.Name }}
+data:
+  application.yaml: |
+    spring:
+      kafka:
+        bootstrap-servers: http://kafka.otus.svc.cluster.local:9092
+      jpa:
+        hibernate:
+          ddl-auto: update
+    server:
+      port: 8090

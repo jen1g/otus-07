@@ -1,8 +1,8 @@
 fullnameOverride: user-service
 
 container:
-  image: jen1g/otus-user-homework-5
-  tag: v1
+  image: jen1g/user
+  tag: v2
   port: 9099
 
 replicaCount: 1
@@ -12,7 +12,7 @@ postgresql:
     postgresPassword: "12345"
     username: "pguser"
     password: "12345"
-    database: "user-service"
+    database: "user_service_db"
   persistence:
     enabled: true
     storageClass: "standard" # kubectl get sc

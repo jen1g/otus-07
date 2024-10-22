@@ -1,35 +1,55 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: billing-service
+  name: {{ .Release.Name }}-deployment
   labels:
-    app: billing-service
+    app: {{ .Release.Name }}-deployment
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: billing-service
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: billing-service
+        app: {{ .Release.Name }}
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: billing-service
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: {{ .Values.container.image }}:{{ .Values.container.tag }}
+          imagePullPolicy: Always
           ports:
-            - containerPort: 8082
+            - containerPort: {{ .Values.container.port }}
           env:
+            - name: SPRING_CONFIG_LOCATION
+              value: /config/application.yaml
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://billing-service-postgresql:{{ .Values.postgresql.servicePort }}/{{ .Values.postgresql.postgresqlDatabase }}"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret-billing
+                  key: SPRING_DATASOURCE_URL
             - name: SPRING_DATASOURCE_USERNAME
-              value: {{ .Values.postgresql.postgresqlUsername }}
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret-billing
+                  key: SPRING_DATASOURCE_USERNAME
             - name: SPRING_DATASOURCE_PASSWORD
-              value: {{ .Values.postgresql.postgresqlPassword }}
-            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: {{ .Values.kafka.bootstrapServers }}
-          resources: {{ toYaml .Values.resources | indent 12 }}
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret-billing
+                  key: SPRING_DATASOURCE_PASSWORD
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config/application.yaml
+              subPath: application.yaml
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Release.Name }}-config
 ---
 apiVersion: v1
 kind: Service

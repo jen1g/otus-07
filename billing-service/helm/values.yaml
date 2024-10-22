@@ -1,22 +1,19 @@
 replicaCount: 1
 
-image:
-  repository: your-docker-repo/billing-service
-  tag: latest
-  pullPolicy: IfNotPresent
-
-service:
-  type: ClusterIP
+container:
+  image: jen1g/billing
+  tag: v2
   port: 8082
 
 postgresql:
-  enabled: true
-  postgresqlUsername: billing_user
-  postgresqlPassword: billing_pass
-  postgresqlDatabase: billing_db
-  servicePort: 5432
-
-kafka:
-  bootstrapServers: kafka:9092
-
-resources: {}
+  auth:
+    postgresPassword: "12345"
+    username: "pguser"
+    password: "12345"
+    database: "billing_service_db"
+  persistence:
+    enabled: true
+    storageClass: "standard" # kubectl get sc
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi

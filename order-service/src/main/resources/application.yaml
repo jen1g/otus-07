@@ -1,0 +1,11 @@
+server:
+  port: 8081
+
+spring:
+  kafka:
+    bootstrap-servers: http://localhost:9092
+
+billing:
+  service:
+    url: http://localhost:8082
+

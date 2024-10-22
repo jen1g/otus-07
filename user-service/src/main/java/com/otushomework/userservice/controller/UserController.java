@@ -1,12 +1,10 @@
 package com.otushomework.userservice.controller;
 
 import com.otushomework.userservice.entity.User;
-import com.otushomework.userservice.event.UserCreatedEvent;
 import com.otushomework.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -18,37 +16,41 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
-    private final KafkaTemplate<String, UserCreatedEvent> kafkaTemplate;
 
     @Autowired
-    public UserController(UserService userService, KafkaTemplate<String, UserCreatedEvent> kafkaTemplate) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.kafkaTemplate = kafkaTemplate;
-
     }
 
-    @PostMapping
-    private ResponseEntity<Map<String, Integer>> createUser(@RequestBody User user) {
+//    @PostMapping("/register")
+//    private ResponseEntity<Map<String, Long>> createUser(@RequestBody User user) {
+//        User savedUser = userService.saveUser(user);
+//        userService.createBillingAccount(savedUser);
+//        Map<String, Long> response = new HashMap<>();
+//        response.put("id", savedUser.getId());
+//        return ResponseEntity.ok().body(response);
+//    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody User user) {
+        System.out.println("test");
+        if (userService.existsByUsername(user.getUsername())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
+        }
         User savedUser = userService.saveUser(user);
-
-        UserCreatedEvent event = new UserCreatedEvent();
-        event.setUserId(savedUser.getId());
-        event.setUsername(savedUser.getUsername());
-        event.setEmail(savedUser.getEmail());
-
-        kafkaTemplate.send("user-created-topic", event);
-        Map<String, Integer> response = new HashMap<>();
+        Map<String, Long> response = new HashMap<>();
         response.put("id", savedUser.getId());
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 
     @GetMapping("/{userId}")
-    private ResponseEntity<User> getUser(@PathVariable int userId, @RequestHeader(value = "X-User-Id", required = false) String xUserId) {
+    private ResponseEntity<User> getUser(@PathVariable Long userId, @RequestHeader(value = "X-User-Id", required = false) String xUserId) {
+        System.out.println(xUserId);
         if (xUserId == null || xUserId.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        int authenticatedUserId = Integer.parseInt(xUserId);
+        long authenticatedUserId = Long.parseLong(xUserId);
         if (authenticatedUserId != userId) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -61,7 +63,7 @@ public class UserController {
 
 
     @DeleteMapping("/{userId}")
-    private ResponseEntity<Void> deleteUser(@PathVariable int userId) {
+    private ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
         if (userService.getUserById(userId).isPresent()) {
             userService.deleteUserById(userId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -72,12 +74,12 @@ public class UserController {
 
 
     @PutMapping("/{userId}")
-    private ResponseEntity<User> updateUser(@PathVariable int userId, @RequestBody User userDetails, @RequestHeader(value = "X-User-Id", required = false) String xUserId) {
+    private ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody User userDetails, @RequestHeader(value = "X-User-Id", required = false) String xUserId) {
         System.out.println(xUserId);
         if (xUserId == null || xUserId.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        int authenticatedUserId = Integer.parseInt(xUserId);
+        long authenticatedUserId = Long.parseLong(xUserId);
         if (authenticatedUserId != userId) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -111,14 +113,5 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
         return ResponseEntity.ok(user.get());
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user) {
-        if (userService.existsByUsername(user.getUsername())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
-        }
-        userService.saveUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
     }
 }

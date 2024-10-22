@@ -11,20 +11,38 @@ data:
         gateway:
           routes:
             - id: auth-service
-              uri: http://{{ .Values.gateway.authServiceNameAuth }}.{{ .Release.Namespace }}.svc.cluster.local
+              uri: http://{{ .Values.gateway.serviceNameAuth }}.{{ .Release.Namespace }}.svc.cluster.local
               predicates:
                 - Path=/auth/**
               filters:
                 - StripPrefix=1
 
             - id: user-service-open
-              uri: http://{{ .Values.gateway.authServiceNameUser }}.{{ .Release.Namespace }}.svc.cluster.local
+              uri: http://{{ .Values.gateway.serviceNameUser }}.{{ .Release.Namespace }}.svc.cluster.local
               predicates:
                 - Path=/user
 
             - id: user-service-secure
-              uri: http://{{ .Values.gateway.authServiceNameUser }}.{{ .Release.Namespace }}.svc.cluster.local
+              uri: http://{{ .Values.gateway.serviceNameUser }}.{{ .Release.Namespace }}.svc.cluster.local
               predicates:
                 - Path=/user/**
               filters:
                 - CheckAuthToken
+
+            - id: billing-service
+              uri: http://{{ .Values.gateway.serviceNameBilling }}.{{ .Release.Namespace }}.svc.cluster.local
+              predicates:
+                - Path=/billing/**
+
+            - id: order-service
+              uri: http://{{ .Values.gateway.serviceNameOrder }}.{{ .Release.Namespace }}.svc.cluster.local
+              predicates:
+                - Path=/orders/**
+
+            - id: notification-service
+              uri: http://{{ .Values.gateway.serviceNameNotification }}.{{ .Release.Namespace }}.svc.cluster.local
+              predicates:
+                - Path=/notifications
+
+    jwt:
+      secret: ${JWT_SECRET}

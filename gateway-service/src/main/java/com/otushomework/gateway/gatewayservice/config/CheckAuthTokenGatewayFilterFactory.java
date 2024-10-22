@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -24,31 +24,33 @@ public class CheckAuthTokenGatewayFilterFactory extends AbstractGatewayFilterFac
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            String path = exchange.getRequest().getURI().getPath();
 
-            // Пропускаем аутентификацию для путей, которые не требуют ее
-            if (exchange.getRequest().getMethod() == HttpMethod.POST && path.equals("/user")) {
-                return chain.filter(exchange);
+            String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+            System.out.println("check");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                return exchange.getResponse().setComplete();
             }
 
-            String authToken = exchange.getRequest().getHeaders().getFirst("X-Auth-Token");
-
-            if (authToken == null || !isValidToken(authToken)) {
+            String authToken = authHeader.substring(7);
+            System.out.println(authToken);
+            if (!isValidToken(authToken)) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
 
             Claims claims = getClaimsFromToken(authToken);
-            String userId = String.valueOf(claims.get("user_id"));
+            String userId = String.valueOf(claims.getSubject());
 
             // Модифицируем запрос: добавляем X-User-Id и удаляем X-Auth-Token
             exchange = exchange.mutate().request(
                     exchange.getRequest().mutate()
                             .header("X-User-Id", userId)
-                            .headers(httpHeaders -> httpHeaders.remove("X-Auth-Token"))
+                            .headers(httpHeaders -> httpHeaders.remove(HttpHeaders.AUTHORIZATION))
                             .build()
             ).build();
-
+            System.out.println(exchange.getRequest().getPath());
+            System.out.println(exchange.getRequest().getHeaders());
             return chain.filter(exchange);
         };
     }

@@ -11,7 +11,7 @@ public class Session {
     @Id
     private String id;
 
-    private int userId;
+    private Long userId;
 
     private String userName;
 
@@ -26,11 +26,11 @@ public class Session {
         this.id = id;
     }
 
-    public int getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 

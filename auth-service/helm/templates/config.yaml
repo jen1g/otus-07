@@ -12,4 +12,6 @@ data:
     management.prometheus.metrics.export.enabled=true
     management.endpoints.web.exposure.include=*
     server.port=8080
-    user.service.url=http://otus-user-service.{{ .Release.Namespace }}.svc.cluster.local
+    jwt.secret=${JWT_SECRET}
+    user.service.url=http://user-app-service.{{ .Release.Namespace }}.svc.cluster.local
+    billing.service.url=http://billing-app-service.{{ .Release.Namespace }}.svc.cluster.local

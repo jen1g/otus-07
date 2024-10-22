@@ -22,7 +22,13 @@ spec:
       containers:
         - image: {{ .Values.container.image }}:{{ .Values.container.tag }}
           name:  {{ .Release.Name }}-app
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config/application.properties
+              subPath: application.properties
           env:
+            - name: SPRING_CONFIG_LOCATION
+              value: /config/application.properties
             - name: SPRING_DATASOURCE_URL
               valueFrom:
                 secretKeyRef:
@@ -38,58 +44,6 @@ spec:
                 secretKeyRef:
                   name: db-secret-user
                   key: SPRING_DATASOURCE_PASSWORD
-            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
-              valueFrom:
-                configMapKeyRef:
-                  name: spring-config-user
-                  key: spring.jpa.hibernate.ddl-auto
-            - name: SPRING_JPA_OPEN_IN_VIEW
-              valueFrom:
-                configMapKeyRef:
-                  name: spring-config-user
-                  key: spring.jpa.open-in-view
-            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
-              valueFrom:
-                configMapKeyRef:
-                  name: spring-config-user
-                  key: management.endpoint.health.probes.enabled
-            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
-              valueFrom:
-                configMapKeyRef:
-                  name: spring-config-user
-                  key: management.endpoints.web.exposure.include
-            - name: MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS
-              valueFrom:
-                configMapKeyRef:
-                  name: spring-config-user
-                  key: management.endpoint.health.show-details
-            - name: MANAGEMENT_METRICS_DISTRIBUTION_SLO_HTTP_SERVER_REQUESTS
-              valueFrom:
-                configMapKeyRef:
-                  name: spring-config-user
-                  key: management.metrics.distribution.slo.http.server.requests
-            - name: MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED
-              valueFrom:
-                configMapKeyRef:
-                  name: spring-config-user
-                  key: management.prometheus.metrics.export.enabled
-            - name: SERVER_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: spring-config-user
-                  key: server.port
-          #           - name: MANAGEMENT_SERVER_PORT
-          #             valueFrom:
-          #               configMapKeyRef:
-          #                 name: spring-config
-          #                 key: management.server.port
-          resources:
-            requests:
-              memory: "500Mi"
-              cpu: "500m"
-            limits:
-              memory: "700Mi"
-              cpu: "700m"
           ports:
             - containerPort: {{ .Values.container.port }}
               protocol: TCP
@@ -98,14 +52,21 @@ spec:
             httpGet:
               path: /actuator/health/liveness
               port: {{ .Values.container.port }}
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
               port: {{ .Values.container.port }}
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 5
+      volumes:
+        - name: config-volume
+          configMap:
+            name: spring-config-user
+            items:
+              - key: application.properties
+                path: application.properties
 ---
 apiVersion: v1
 kind: Service

@@ -1,24 +1,22 @@
 package com.otushomework.authservice.model;
 
 public class UserDTO {
-    private int id;
+    private Long id;
     private String username;
     private String password;
     private String firstName;
     private String lastName;
     private String email;
     private String phone;
-    // Getters and Setters
-
 
     public UserDTO() {
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

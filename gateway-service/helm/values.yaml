@@ -1,12 +1,15 @@
 fullnameOverride: gateway-service
 
 container:
-  image: jen1g/otus-gateway
+  image: jen1g/gateway
   tag: v1
   port: 8080
 
 replicaCount: 1
 
 gateway:
-  authServiceNameAuth: otus-auth-service
-  authServiceNameUser: otus-user-service
+  serviceNameAuth: auth-app-service
+  serviceNameUser: user-app-service
+  serviceNameBilling: billing-app-service
+  serviceNameOrder: order-app-service
+  serviceNameNotification: notification-app-service
