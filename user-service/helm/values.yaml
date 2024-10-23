@@ -2,7 +2,7 @@ fullnameOverride: user-service
 
 container:
   image: jen1g/user
-  tag: v2
+  tag: v3
   port: 9099
 
 replicaCount: 1

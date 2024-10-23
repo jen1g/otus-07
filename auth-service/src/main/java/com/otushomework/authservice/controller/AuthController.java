@@ -3,7 +3,7 @@ package com.otushomework.authservice.controller;
 import com.otushomework.authservice.model.RefreshToken;
 import com.otushomework.authservice.model.UserDTO;
 import com.otushomework.authservice.repository.RefreshTokenRepository;
-import com.otushomework.authservice.service.UserService;
+import com.otushomework.authservice.service.AuthService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,21 +20,21 @@ import java.util.*;
 @RestController
 public class AuthController {
 
-    private final UserService userService;
+    private final AuthService authService;
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    public AuthController(UserService userService, RefreshTokenRepository refreshTokenRepository) {
-        this.userService = userService;
+    public AuthController(AuthService authService, RefreshTokenRepository refreshTokenRepository) {
+        this.authService = authService;
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String username,
                                    @RequestParam String password) {
-        Optional<UserDTO> user = userService.getUserByUsername(username, password);
+        Optional<UserDTO> user = authService.getUserByUsername(username, password);
         System.out.println("test");
         if (user.isEmpty()) {
             return ResponseEntity.status(401).body("Login or password is incorrect");
@@ -42,15 +42,10 @@ public class AuthController {
 
         String accessToken = createAccessToken(user.get());
         RefreshToken refreshToken = createRefreshToken(user.get());
-
-        // Сохраняем refreshToken в базе данных
         refreshTokenRepository.save(refreshToken);
-
-        // Возвращаем токены в ответе
         Map<String, Object> tokens = new HashMap<>();
         tokens.put("accessToken", accessToken);
         tokens.put("refreshToken", refreshToken.getToken());
-
         return ResponseEntity.ok(tokens);
     }
 
@@ -88,10 +83,10 @@ public class AuthController {
         Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByToken(refreshToken);
 
         if (tokenOptional.isEmpty() || tokenOptional.get().isExpired()) {
-            return ResponseEntity.status(401).body("Invalid or expired refresh token");
+            return ResponseEntity.status(401).body("Невалидный токен refresh token");
         }
-
-        Optional<UserDTO> user = userService.getUserById(tokenOptional.get().getUserId());
+        System.out.println(tokenOptional.get());
+        Optional<UserDTO> user = authService.getUserById(tokenOptional.get().getUserId());
         String newAccessToken = createAccessToken(user.get());
         RefreshToken existingToken = tokenOptional.get();
         existingToken.setExpiryDate(LocalDateTime.now().plusDays(7));

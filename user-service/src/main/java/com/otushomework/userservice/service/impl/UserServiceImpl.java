@@ -1,13 +1,13 @@
-package com.otushomework.userservice.service;
+package com.otushomework.userservice.service.impl;
 
 import com.otushomework.userservice.entity.User;
 import com.otushomework.userservice.repository.UserRepository;
+import com.otushomework.userservice.service.BillingServiceClient;
+import com.otushomework.userservice.service.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
@@ -19,16 +19,19 @@ public class UserServiceImpl implements UserService {
     private String billingServiceUrl;
 
     private final UserRepository repository;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final BillingServiceClient billingServiceClient;
 
     @Autowired
-    public UserServiceImpl(UserRepository repository) {
+    public UserServiceImpl(UserRepository repository, BillingServiceClient billingServiceClient) {
         this.repository = repository;
+        this.billingServiceClient = billingServiceClient;
     }
 
     @Override
     public User saveUser(User user) {
-       return repository.save(user);
+        User savedUser = repository.save(user);
+        createBillingAccount(savedUser);
+        return savedUser;
     }
 
     @Override
@@ -48,25 +51,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> findByUsernameAndPassword(String username, String password) {
-       return repository.findByUsernameAndPassword(username, password);
+        return repository.findByUsernameAndPassword(username, password);
     }
 
     @Override
     public boolean existsByUsername(String username) {
-       return repository.existsByUsername(username);
+        return repository.existsByUsername(username);
     }
 
-    @Override
-    public void createBillingAccount(User user) {
-        String url = billingServiceUrl + "/billing?userId=" + user.getId();
+
+    private void createBillingAccount(User user) {
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(url, null, String.class);
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("Account created for user with ID: " + user.getId());
-            } else {
-                System.out.println("Failed to create account for user with ID: " + user.getId());
-            }
+            String response = billingServiceClient.createBillingAccount(user.getId());
+            System.out.println("Аккаунт создан с id: " + user.getId());
         } catch (Exception e) {
+            System.out.println("Не удалось создать аккаунт пользователя с id: " + user.getId());
             e.printStackTrace();
         }
     }

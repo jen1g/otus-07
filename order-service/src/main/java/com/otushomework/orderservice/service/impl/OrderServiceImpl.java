@@ -1,5 +1,6 @@
 package com.otushomework.orderservice.service.impl;
 
+import com.otushomework.orderservice.entity.OrderRequest;
 import com.otushomework.orderservice.entity.WithdrawRequest;
 import com.otushomework.orderservice.exception.InsufficientFundsException;
 import com.otushomework.orderservice.service.KafkaMessageProducer;
@@ -24,18 +25,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void createOrderWithHold(Long userId, double amount) throws InsufficientFundsException {
-        // 1. Списываем средства через billing-service
-        WithdrawRequest requestBody = new WithdrawRequest(userId, amount);
+    public void createOrderWithHold(String userId, OrderRequest request) throws InsufficientFundsException {
+        WithdrawRequest requestBody = new WithdrawRequest(Long.valueOf(userId), request.getTotalAmount());
         String message;
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(billingServiceUrl + "/billing/withdraw", requestBody, String.class);
             if (response.getStatusCode().is2xxSuccessful()) {
-              message = "Order processed successfully for userId: " + userId;
+              message = "Заказ успешно обработан userId: " + userId;
               kafkaProducer.sendMessage("order-notifications", message);
             }
         } catch (HttpStatusCodeException e) {
-            message = "Order failed due to insufficient funds for userId: " + userId;
+            message = "Заказ не принят в обработку: Недостаточно средств userId: " + userId;
             kafkaProducer.sendMessage("order-notifications", message);
             throw new InsufficientFundsException(message);
         }

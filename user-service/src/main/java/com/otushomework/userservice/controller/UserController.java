@@ -22,20 +22,10 @@ public class UserController {
         this.userService = userService;
     }
 
-//    @PostMapping("/register")
-//    private ResponseEntity<Map<String, Long>> createUser(@RequestBody User user) {
-//        User savedUser = userService.saveUser(user);
-//        userService.createBillingAccount(savedUser);
-//        Map<String, Long> response = new HashMap<>();
-//        response.put("id", savedUser.getId());
-//        return ResponseEntity.ok().body(response);
-//    }
-
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
-        System.out.println("test");
         if (userService.existsByUsername(user.getUsername())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Пользователь с таким именем уже существует");
         }
         User savedUser = userService.saveUser(user);
         Map<String, Long> response = new HashMap<>();
@@ -47,6 +37,7 @@ public class UserController {
     @GetMapping("/{userId}")
     private ResponseEntity<User> getUser(@PathVariable Long userId, @RequestHeader(value = "X-User-Id", required = false) String xUserId) {
         System.out.println(xUserId);
+        System.out.println(userId);
         if (xUserId == null || xUserId.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }

@@ -12,6 +12,5 @@ public interface UserService {
     void deleteUserById(Long id);
     Optional<User> findByUsernameAndPassword(String username, String password);
     boolean existsByUsername(String username);
-    void createBillingAccount(User user);
 
 }

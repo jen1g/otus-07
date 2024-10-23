@@ -1,14 +1,12 @@
 package com.otushomework.orderservice.controller;
 
+import com.otushomework.orderservice.entity.OrderRequest;
 import com.otushomework.orderservice.exception.InsufficientFundsException;
 import com.otushomework.orderservice.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/orders")
@@ -22,13 +20,13 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createOrder(@RequestParam Long userId, @RequestParam double orderPrice) {
+    public ResponseEntity<String> createOrder(@RequestBody OrderRequest request, @RequestHeader(value = "X-User-Id", required = false) String xUserId) {
         try {
-            orderService.createOrderWithHold(userId, orderPrice);
+            orderService.createOrderWithHold(xUserId, request);
         } catch (InsufficientFundsException e){
-            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Order not created. Insufficient funds.");
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Недостаточно средств для создания заказа.");
         }
-        return ResponseEntity.ok("Order created and funds reserved");
+        return ResponseEntity.ok(String.format("Заказ %s принят в обработку", String.valueOf(request.getOrderId())));
     }
 
 

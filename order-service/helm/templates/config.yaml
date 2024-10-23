@@ -12,3 +12,15 @@ data:
     billing:
       service:
         url: http://billing-app-service.{{ .Release.Namespace }}.svc.cluster.local
+
+    delivery:
+      service:
+        url: http://delivery-app-service.{{ .Release.Namespace }}.svc.cluster.local
+
+    items:
+      service:
+        url: http://items-app-service.{{ .Release.Namespace }}.svc.cluster.local
+
+    payment:
+      service:
+        url: http://payment-app-service.{{ .Release.Namespace }}.svc.cluster.local

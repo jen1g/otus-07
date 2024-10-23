@@ -2,7 +2,7 @@ fullnameOverride: gateway-service
 
 container:
   image: jen1g/gateway
-  tag: v1
+  tag: v2
   port: 8080
 
 replicaCount: 1

@@ -2,7 +2,7 @@ fullnameOverride: auth-service
 
 container:
   image: jen1g/auth
-  tag: v1
+  tag: v2
   port: 8080
 
 replicaCount: 1

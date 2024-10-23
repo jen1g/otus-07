@@ -10,17 +10,20 @@ data:
       cloud:
         gateway:
           routes:
-            - id: auth-service
+            - id: auth-service-login
               uri: http://{{ .Values.gateway.serviceNameAuth }}.{{ .Release.Namespace }}.svc.cluster.local
               predicates:
-                - Path=/auth/**
-              filters:
-                - StripPrefix=1
+                - Path=/login
+
+            - id: auth-service-refresh
+              uri: http://{{ .Values.gateway.serviceNameAuth }}.{{ .Release.Namespace }}.svc.cluster.local
+              predicates:
+                - Path=/refresh
 
             - id: user-service-open
               uri: http://{{ .Values.gateway.serviceNameUser }}.{{ .Release.Namespace }}.svc.cluster.local
               predicates:
-                - Path=/user
+                - Path=/user/register
 
             - id: user-service-secure
               uri: http://{{ .Values.gateway.serviceNameUser }}.{{ .Release.Namespace }}.svc.cluster.local
@@ -33,16 +36,22 @@ data:
               uri: http://{{ .Values.gateway.serviceNameBilling }}.{{ .Release.Namespace }}.svc.cluster.local
               predicates:
                 - Path=/billing/**
+              filters:
+                - CheckAuthToken
 
             - id: order-service
               uri: http://{{ .Values.gateway.serviceNameOrder }}.{{ .Release.Namespace }}.svc.cluster.local
               predicates:
-                - Path=/orders/**
+                - Path=/orders
+              filters:
+                - CheckAuthToken
 
             - id: notification-service
               uri: http://{{ .Values.gateway.serviceNameNotification }}.{{ .Release.Namespace }}.svc.cluster.local
               predicates:
                 - Path=/notifications
+              filters:
+                - CheckAuthToken
 
     jwt:
       secret: ${JWT_SECRET}

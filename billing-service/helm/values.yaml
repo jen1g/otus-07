@@ -2,7 +2,7 @@ replicaCount: 1
 
 container:
   image: jen1g/billing
-  tag: v2
+  tag: v3
   port: 8082
 
 postgresql:

@@ -9,3 +9,15 @@ billing:
   service:
     url: http://localhost:8082
 
+delivery:
+  service:
+    url: http://localhost
+
+inventory:
+  service:
+    url: http://localhost
+
+payment:
+  service:
+    url: http://localhost
+

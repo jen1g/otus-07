@@ -17,22 +17,22 @@ public class BillingController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createAccount(@RequestParam long userId) {
+    public ResponseEntity<String> createAccount(@RequestParam Long userId) {
         billingService.createAccount(userId);
         return ResponseEntity.ok("Account created");
     }
 
-    @GetMapping("/{userId}/balance")
-    public ResponseEntity<Double> getBalance(@PathVariable long userId) {
-        Double balance = billingService.getBalance(userId);
+    @GetMapping("/balance")
+    public ResponseEntity<Double> getBalance(@RequestHeader(value = "X-User-Id", required = false) String xUserId) {
+        Double balance = billingService.getBalance(Long.valueOf(xUserId));
         return ResponseEntity.ok(balance);
     }
 
-    @PostMapping("/{userId}/deposit")
-    public ResponseEntity<String> deposit(@PathVariable long userId, @RequestParam double amount) {
+    @PostMapping("/deposit")
+    public ResponseEntity<String> deposit(@RequestHeader(value = "X-User-Id", required = false) String xUserId, @RequestParam double amount) {
         System.out.println(amount + "add to deposit");
-        billingService.deposit(userId, amount);
-        return ResponseEntity.ok("Deposit successful");
+        billingService.deposit(Long.valueOf(xUserId), amount);
+        return ResponseEntity.ok("Счет пользователя пополнен на " + amount);
     }
 
     @PostMapping("/withdraw")

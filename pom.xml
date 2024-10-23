@@ -16,6 +16,9 @@
         <module>billing-service</module>
         <module>notification-service</module>
         <module>order-service</module>
+        <module>payment-service</module>
+        <module>delivery-service</module>
+        <module>items-service</module>
     </modules>
 
     <parent>
@@ -74,7 +77,6 @@
     <build>
         <pluginManagement>
             <plugins>
-                <!-- Spring Boot Maven плагин -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>

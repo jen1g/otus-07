@@ -2,7 +2,7 @@ fullnameOverride: order-service
 
 container:
   image: jen1g/order
-  tag: v1
+  tag: v3
   port: 8080
 
 replicaCount: 1
