@@ -7,10 +7,10 @@ import java.util.Optional;
 public interface UserService {
 
     User saveUser(User user);
-    Optional<User> getUserById(Long id);
+    Optional<User> getUserById(Long userId);
     void updateUserById(User updatedUser);
-    void deleteUserById(Long id);
-    Optional<User> findByUsernameAndPassword(String username, String password);
+    void deleteUserById(Long userId);
+    Optional<User> findUserByUsername(String username);
     boolean existsByUsername(String username);
 
 }

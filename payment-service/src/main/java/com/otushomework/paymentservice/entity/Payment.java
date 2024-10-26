@@ -1,20 +1,22 @@
 package com.otushomework.paymentservice.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 @Entity
 public class Payment {
 
-    private Long orderId;
+    @Id
+    private String orderId;
     private Long userId;
     private Double amount;
     private PayStatus payStatus;
 
-    public Long getOrderId() {
+    public String getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Long orderId) {
+    public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
 

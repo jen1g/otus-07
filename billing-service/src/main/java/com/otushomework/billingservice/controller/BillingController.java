@@ -1,6 +1,6 @@
 package com.otushomework.billingservice.controller;
 
-import com.otushomework.billingservice.model.WithdrawRequest;
+import com.otushomework.billingservice.request.BillingRequest;
 import com.otushomework.billingservice.service.BillingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +28,13 @@ public class BillingController {
         return ResponseEntity.ok(balance);
     }
 
+    @PostMapping("/refund")
+    public ResponseEntity<String> deposit(@RequestBody BillingRequest billingRequest) {
+        System.out.println(billingRequest.getAmount() + "add to deposit");
+        billingService.deposit(billingRequest.getUserId(), billingRequest.getAmount());
+        return ResponseEntity.ok("Счет пользователя пополнен на " + billingRequest.getAmount());
+    }
+
     @PostMapping("/deposit")
     public ResponseEntity<String> deposit(@RequestHeader(value = "X-User-Id", required = false) String xUserId, @RequestParam double amount) {
         System.out.println(amount + "add to deposit");
@@ -36,7 +43,7 @@ public class BillingController {
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<String> withdraw(@RequestBody WithdrawRequest request) {
+    public ResponseEntity<String> withdraw(@RequestBody BillingRequest request) {
         boolean success = billingService.withdraw(request.getUserId(), request.getAmount());
         if (success) {
             return ResponseEntity.ok("Withdrawal successful");

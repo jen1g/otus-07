@@ -2,15 +2,15 @@ package com.otushomework.paymentservice.request;
 
 public class PaymentRequest {
 
-    private Long orderId;
+    private String orderId;
     private Long userId;
     private Double amount;
 
-    public Long getOrderId() {
+    public String getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Long orderId) {
+    public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
 

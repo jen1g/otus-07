@@ -6,7 +6,8 @@ import com.otushomework.userservice.service.BillingServiceClient;
 import com.otushomework.userservice.service.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -14,9 +15,6 @@ import java.util.Optional;
 @Transactional
 @Service
 public class UserServiceImpl implements UserService {
-
-    @Value("${billing.service.url}")
-    private String billingServiceUrl;
 
     private final UserRepository repository;
     private final BillingServiceClient billingServiceClient;
@@ -29,6 +27,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User saveUser(User user) {
+        user.setPassword(passwordEncoder().encode(user.getPassword()));
         User savedUser = repository.save(user);
         createBillingAccount(savedUser);
         return savedUser;
@@ -45,13 +44,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUserById(Long id) {
-        repository.deleteById(id);
+    public void deleteUserById(Long userId) {
+        repository.deleteById(userId);
     }
 
     @Override
-    public Optional<User> findByUsernameAndPassword(String username, String password) {
-        return repository.findByUsernameAndPassword(username, password);
+    public Optional<User> findUserByUsername(String username) {
+        return repository.findUserByUsername(username);
     }
 
     @Override
@@ -70,5 +69,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-
+    private PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

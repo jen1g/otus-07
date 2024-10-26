@@ -2,7 +2,7 @@ package com.otushomework.paymentservice.entity;
 
 public enum PayStatus {
 
-    REFUND,
+    REFUNDED,
     COMPLETED;
 
 

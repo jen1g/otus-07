@@ -1,13 +1,15 @@
 package com.otushomework.authservice.controller;
 
+import com.otushomework.authservice.dto.UserDTO;
 import com.otushomework.authservice.model.RefreshToken;
-import com.otushomework.authservice.model.UserDTO;
 import com.otushomework.authservice.repository.RefreshTokenRepository;
 import com.otushomework.authservice.service.AuthService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,14 +36,19 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String username,
                                    @RequestParam String password) {
-        Optional<UserDTO> user = authService.getUserByUsername(username, password);
-        System.out.println("test");
-        if (user.isEmpty()) {
-            return ResponseEntity.status(401).body("Login or password is incorrect");
+        Optional<UserDTO> userDtoOptional = authService.getUserByUsername(username);
+        if (userDtoOptional .isEmpty()) {
+            return ResponseEntity.status(401).body("Логин или пароль неверен");
         }
 
-        String accessToken = createAccessToken(user.get());
-        RefreshToken refreshToken = createRefreshToken(user.get());
+        UserDTO userDto = userDtoOptional.get();
+
+        if (!passwordEncoder().matches(password, userDto.getPassword())) {
+            return ResponseEntity.status(401).body("Логин или пароль неверен");
+        }
+
+        String accessToken = createAccessToken(userDtoOptional.get());
+        RefreshToken refreshToken = createRefreshToken(userDtoOptional.get());
         refreshTokenRepository.save(refreshToken);
         Map<String, Object> tokens = new HashMap<>();
         tokens.put("accessToken", accessToken);
@@ -86,27 +93,31 @@ public class AuthController {
             return ResponseEntity.status(401).body("Невалидный токен refresh token");
         }
         System.out.println(tokenOptional.get());
-        Optional<UserDTO> user = authService.getUserById(tokenOptional.get().getUserId());
-        String newAccessToken = createAccessToken(user.get());
-        RefreshToken existingToken = tokenOptional.get();
-        existingToken.setExpiryDate(LocalDateTime.now().plusDays(7));
-        refreshTokenRepository.save(existingToken);
+        Optional<UserDTO> optionalUser = authService.getUserById(tokenOptional.get().getUserId());
+        if (optionalUser.isPresent()) {
+            String newAccessToken = createAccessToken(optionalUser.get());
 
-        Map<String, Object> tokens = new HashMap<>();
-        tokens.put("accessToken", newAccessToken);
-        tokens.put("refreshToken", existingToken.getToken());
+            RefreshToken existingToken = tokenOptional.get();
+            existingToken.setExpiryDate(LocalDateTime.now().plusDays(7));
+            refreshTokenRepository.save(existingToken);
 
-        return ResponseEntity.ok(tokens);
+            Map<String, Object> tokens = new HashMap<>();
+            tokens.put("accessToken", newAccessToken);
+            tokens.put("refreshToken", existingToken.getToken());
+            return ResponseEntity.ok(tokens);
+        } else {
+            return ResponseEntity.status(401).body("Пользователь не найден или недействительный refresh токен");
+        }
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestParam String refreshToken) {
         Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByToken(refreshToken);
+        tokenOptional.ifPresent(refreshTokenRepository::delete);
+        return ResponseEntity.ok("Пользователь вышел из системы");
+    }
 
-        if (tokenOptional.isPresent()) {
-            refreshTokenRepository.delete(tokenOptional.get());
-        }
-
-        return ResponseEntity.ok("Logged out successfully");
+    private PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

@@ -1,5 +1,6 @@
 package com.otushomework.userservice.controller;
 
+import com.otushomework.userservice.dto.UserDTO;
 import com.otushomework.userservice.entity.User;
 import com.otushomework.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,17 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        if (userService.existsByUsername(user.getUsername())) {
+    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDto) {
+        if (userService.existsByUsername(userDto.getUsername())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Пользователь с таким именем уже существует");
         }
+        User user = new User();
+        user.setUsername(userDto.getUsername());
+        user.setPassword(userDto.getPassword());
+        user.setEmail(userDto.getEmail());
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        user.setPhone(userDto.getPhone());
         User savedUser = userService.saveUser(user);
         Map<String, Long> response = new HashMap<>();
         response.put("id", savedUser.getId());
@@ -49,9 +57,6 @@ public class UserController {
         return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
-
-
-
 
     @DeleteMapping("/{userId}")
     private ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
@@ -96,12 +101,10 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getUserByUsernameAndPassword(@RequestParam String username,
-                                                          @RequestParam String password) {
-        System.out.println("test6");
-        Optional<User> user = userService.findByUsernameAndPassword(username, password);
+    public ResponseEntity<?> getUserByUsernameAndPassword(@RequestParam String username) {
+        Optional<User> user = userService.findUserByUsername(username);
         if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден");
         }
         return ResponseEntity.ok(user.get());
     }

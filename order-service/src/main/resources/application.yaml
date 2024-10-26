@@ -5,19 +5,35 @@ spring:
   kafka:
     bootstrap-servers: http://localhost:9092
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_service_db
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+
 billing:
   service:
     url: http://localhost:8082
 
 delivery:
   service:
-    url: http://localhost
+    url: http://localhost:8086
 
-inventory:
+warehouse:
   service:
-    url: http://localhost
+    url: http://localhost:8085
 
 payment:
   service:
-    url: http://localhost
+    url: http://localhost:8084
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include=*:
+
+
 

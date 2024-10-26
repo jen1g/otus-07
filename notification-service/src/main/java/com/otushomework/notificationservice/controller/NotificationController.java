@@ -23,7 +23,14 @@ public class NotificationController {
 
     @GetMapping
     public List<Notification> getMessage() {
-        List<Notification> balance = service.getAllNotifications();
-        return balance;
+        List<Notification> notifications = service.getAllNotifications();
+        return notifications;
     }
+
+//    @GetMapping
+//    public List<Notification> getMessage(@RequestHeader(value = "X-User-Id", required = false) String xUserId) {
+//        Long userId = Long.parseLong(xUserId);
+//        List<Notification> notifications = service.getAllNotifications(userId);
+//        return notifications;
+//    }
 }
